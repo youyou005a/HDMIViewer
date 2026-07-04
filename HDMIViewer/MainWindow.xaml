@@ -5,15 +5,19 @@
         Height="700"
         Width="1100">
 
-    <Grid Margin="20">
+    <!-- 取消了 Margin="20"，让整体布局贴边 -->
+    <Grid>
         <Grid.RowDefinitions>
+            <!-- 0: 上方控制栏，高度自适应 -->
             <RowDefinition Height="Auto"/>
+            <!-- 1: 状态文本栏，高度自适应 -->
             <RowDefinition Height="Auto"/>
+            <!-- 2: 视频渲染区，撑满剩余所有空间 -->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- 这一行改成了布局面板，左边选设备，右边点打开 -->
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
+        <!-- 上边框/控制栏：四周留一点小边距保持美观，下边距空出 5 像素 -->
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="15,10,15,5">
             <TextBlock Text="选择视频设备: " VerticalAlignment="Center" Margin="0,0,10,0"/>
             <ComboBox x:Name="DeviceComboBox" Width="300" Height="30" VerticalContentAlignment="Center" Margin="0,0,20,0"/>
             <Button Content="打开采集卡"
@@ -22,13 +26,18 @@
                     Click="Open_Click"/>
         </StackPanel>
 
+        <!-- 状态文本：紧贴控制栏下方 -->
         <TextBlock x:Name="StatusText"
                    Grid.Row="1"
-                   Margin="0,5,0,10"
+                   Margin="15,0,15,5"
+                   Foreground="Gray"
                    Text="未启动"/>
 
+        <!-- 视频显示框：彻底去掉 Margin，设置 Stretch="Uniform" 会按画面比例撑满左、右、下三边 -->
         <Image x:Name="VideoImage"
                Grid.Row="2"
+               Margin="0"
                Stretch="Uniform"/>
+
     </Grid>
 </Window>

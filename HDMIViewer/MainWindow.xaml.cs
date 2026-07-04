@@ -105,8 +105,8 @@ namespace HDMIViewer
                 _capture.Set(VideoCaptureProperties.FourCC, FourCC.FromString("MJPG"));
 
                 // 强行把分辨率降到 1080P 或 720P 尝试握手（防止4K超限黑屏）
-                _capture.Set(VideoCaptureProperties.FrameWidth, 1920);
-                _capture.Set(VideoCaptureProperties.FrameHeight, 1080);
+                _capture.Set(VideoCaptureProperties.FrameWidth, 3840);
+                _capture.Set(VideoCaptureProperties.FrameHeight, 2160);
                 // ==================================================
 
                 if (!_capture.IsOpened())
