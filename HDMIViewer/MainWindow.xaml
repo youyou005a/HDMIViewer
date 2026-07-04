@@ -6,19 +6,29 @@
         Width="1100">
 
     <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <StackPanel>
-
-            <Button Content="扫描视频设备"
-                    Width="150"
-                    Height="40"
-                    Click="Scan_Click"/>
-
-            <ListBox x:Name="DeviceList"
-                     Margin="0,20,0,0"
-                     Height="400"/>
-
+        <!-- 这一行改成了布局面板，左边选设备，右边点打开 -->
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="选择视频设备: " VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <ComboBox x:Name="DeviceComboBox" Width="300" Height="30" VerticalContentAlignment="Center" Margin="0,0,20,0"/>
+            <Button Content="打开采集卡"
+                    Width="120"
+                    Height="30"
+                    Click="Open_Click"/>
         </StackPanel>
 
+        <TextBlock x:Name="StatusText"
+                   Grid.Row="1"
+                   Margin="0,5,0,10"
+                   Text="未启动"/>
+
+        <Image x:Name="VideoImage"
+               Grid.Row="2"
+               Stretch="Uniform"/>
     </Grid>
 </Window>
