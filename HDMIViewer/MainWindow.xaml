@@ -3,17 +3,20 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="HDMI Viewer"
         Height="700"
-        Width="1100">
+        Width="1100"
+        KeyDown="Window_KeyDown">
+    <!-- 监听全局键盘事件，按 ESC 退出全屏 -->
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <!-- 给控制栏和状态栏命名，方便全屏时彻底隐藏它们 -->
+            <RowDefinition x:Name="ControlRow" Height="Auto"/>
+            <RowDefinition x:Name="StatusRow" Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- 参数控制栏 -->
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="15,10,15,5" VerticalAlignment="Center">
+        <StackPanel x:Name="ControlPanel" Orientation="Horizontal" Grid.Row="0" Margin="15,10,15,5" VerticalAlignment="Center">
             <!-- 通道选择 -->
             <TextBlock Text="通道号:" VerticalAlignment="Center" Margin="0,0,5,0"/>
             <ComboBox x:Name="ChannelComboBox" Width="70" Height="30" VerticalContentAlignment="Center" Margin="0,0,15,0">
@@ -44,10 +47,15 @@
                     Width="110" Height="30" Margin="0,0,10,0"
                     Click="Open_Click"/>
 
-            <!-- 停止按钮（初始为不可用状态） -->
+            <!-- 停止按钮 -->
             <Button x:Name="StopButton" Content="停止采集"
-                    Width="110" Height="30" IsEnabled="False"
+                    Width="110" Height="30" Margin="0,0,15,0" IsEnabled="False"
                     Click="Stop_Click"/>
+
+            <!-- 全屏按钮 -->
+            <Button x:Name="FullScreenButton" Content="全屏显示"
+                    Width="90" Height="30"
+                    Click="FullScreen_Click"/>
         </StackPanel>
 
         <!-- 状态文本 -->
@@ -57,10 +65,11 @@
                    Foreground="Gray"
                    Text="未启动"/>
 
-        <!-- 视频显示框 -->
-        <Border Grid.Row="2" Background="Black" Margin="0">
+        <!-- 视频显示框（加入 MouseLeftButtonDown 事件支持双击全屏） -->
+        <Border Grid.Row="2" Background="Black" Margin="0" 
+                MouseLeftButtonDown="VideoBorder_MouseLeftButtonDown">
             <Image x:Name="VideoImage"
-           Stretch="Uniform"/>
+                   Stretch="Uniform"/>
         </Border>
 
     </Grid>

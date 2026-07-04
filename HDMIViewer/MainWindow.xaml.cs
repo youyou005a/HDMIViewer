@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using OpenCvSharp;
 using OpenCvSharp.WpfExtensions;
 
@@ -12,6 +13,9 @@ namespace HDMIViewer
         private VideoCapture? _capture;
         private Thread? _thread;
         private bool _running;
+
+        // 记录当前是否处于全屏状态
+        private bool _isFullScreen = false;
 
         public MainWindow()
         {
@@ -57,9 +61,8 @@ namespace HDMIViewer
 
                 _running = true;
 
-                // 切换UI控件状态
                 OpenButton.IsEnabled = false;
-                StopButton.IsEnabled = true;      // 启用停止按钮
+                StopButton.IsEnabled = true;
                 ChannelComboBox.IsEnabled = false;
                 WidthTextBox.IsEnabled = false;
                 HeightTextBox.IsEnabled = false;
@@ -84,14 +87,12 @@ namespace HDMIViewer
             StatusText.Text = "已停止采集";
         }
 
-        // ====== 核心停止逻辑（复用抽取） ======
         private void StopCapture()
         {
             if (!_running) return;
 
             _running = false;
 
-            // 等待后台抓图线程安全退出
             if (_thread != null && _thread.IsAlive)
             {
                 _thread.Join(150);
@@ -99,19 +100,16 @@ namespace HDMIViewer
 
             try
             {
-                // 彻底释放采集卡占用
                 _capture?.Release();
                 _capture?.Dispose();
                 _capture = null;
             }
             catch { }
 
-            // 切回主线程重置 UI 状态
             Dispatcher.Invoke(() =>
             {
-                VideoImage.Source = null; // 清空最后一帧画面，恢复黑色背景
+                VideoImage.Source = null;
 
-                // 恢复所有控件的可点击状态
                 OpenButton.IsEnabled = true;
                 StopButton.IsEnabled = false;
                 ChannelComboBox.IsEnabled = true;
@@ -119,6 +117,61 @@ namespace HDMIViewer
                 HeightTextBox.IsEnabled = true;
                 FormatComboBox.IsEnabled = true;
             });
+        }
+
+        // ====== 核心全屏切换逻辑 ======
+        private void ToggleFullScreen()
+        {
+            if (!_isFullScreen)
+            {
+                // 变成全屏状态
+                this.WindowStyle = WindowStyle.None; // 砍掉系统自带的标题栏和边框
+                this.WindowState = WindowState.Maximized; // 窗口最大化（由于Style为None，它会自动盖住底部的任务栏）
+
+                // 隐藏我们的控制区域和状态栏，腾出整张屏幕给视频
+                ControlRow.Height = new GridLength(0);
+                StatusRow.Height = new GridLength(0);
+
+                _isFullScreen = true;
+            }
+            else
+            {
+                // 退出全屏恢复常规窗口
+                this.WindowStyle = WindowStyle.SingleBorderWindow; // 恢复系统标题栏
+                this.WindowState = WindowState.Normal; // 恢复常规大小
+
+                // 重新把控制区域和状态栏显示出来
+                ControlRow.Height = GridLength.Auto;
+                StatusRow.Height = GridLength.Auto;
+
+                _isFullScreen = false;
+            }
+        }
+
+        // 按钮点击触发全屏
+        private void FullScreen_Click(object sender, RoutedEventArgs e)
+        {
+            ToggleFullScreen();
+        }
+
+        // 双击视频画面触发全屏
+        private void VideoBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // 检查是否是双击
+            if (e.ClickCount == 2)
+            {
+                ToggleFullScreen();
+            }
+        }
+
+        // 全局键盘监听
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            // 如果处于全屏状态下按下了 Esc 键，直接退出全屏
+            if (e.Key == Key.Escape && _isFullScreen)
+            {
+                ToggleFullScreen();
+            }
         }
 
         // ====== 后台抓图线程 ======
@@ -154,7 +207,7 @@ namespace HDMIViewer
 
                 Dispatcher.Invoke(() =>
                 {
-                    if (_running) // 确保在停止的瞬间不再往里塞图
+                    if (_running)
                     {
                         VideoImage.Source = source;
                     }
@@ -163,7 +216,6 @@ namespace HDMIViewer
             catch { }
         }
 
-        // ====== 窗口关闭时彻底释放资源 ======
         protected override void OnClosed(EventArgs e)
         {
             StopCapture();
